@@ -1,19 +1,26 @@
 <?php
 include 'connection.php';
+
 if(isset($_POST['submit'])){
+    $id = $_POST['uid'];
     $firstName = $_POST['firstName'];
     $lastName = $_POST['lastName'];
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    $sql = "insert into `user` (firstName,lastName,email,password)
-    values('$firstName','$lastName','$email','$password')";
-
-    $result = mysqli_query($con,$sql);
-    if($result){
-        echo "Data Inserted Successfully";
-    }else{
-        die(mysqli_error($con));
+    $sql = "INSERT INTO `user` (uid,firstName, lastName, email, password) VALUES (?,?, ?, ?, ?)";
+    $stmt = $con->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param($uid, $firstName, $lastName, $email, $password);
+        if ($stmt->execute()) {
+            echo "Data Inserted Successfully";
+        } else {
+            echo "Error: " . $stmt->error;
+        }
+        $stmt->close();
+    } else {
+        echo "Error: " . $con->error;
     }
 }
 ?>
@@ -25,10 +32,13 @@ if(isset($_POST['submit'])){
 </head>
 <body>
     <form method="post">
-        <label for="first_name">First Name:</label>
+        <label for="uid">User ID:</label>
+        <input type="text" id="uid" name="uid" required><br><br>
+
+        <label for="firstName">First Name:</label>
         <input type="text" id="firstName" name="firstName" required><br><br>
         
-        <label for="last_name">Last Name:</label>
+        <label for="lastName">Last Name:</label>
         <input type="text" id="lastName" name="lastName" required><br><br>
         
         <label for="email">Email:</label>
@@ -37,7 +47,7 @@ if(isset($_POST['submit'])){
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required><br><br>
 
-        <input type="submit" value="Submit">
+        <input type="submit" name="submit" value="Submit">
     </form>
 </body>
 </html>
